@@ -1,16 +1,36 @@
 document.getElementById('upload').addEventListener('click', upload);
 
-function upload(){
-  let progress = document.getElementById('progress');
-  progress.innerHTML = "Uploading!";
-
+async function upload(e){
+  let progress = document.getElementById("progress");
+  progress.innerHTML = "Uploading";
   let file = document.getElementById("file").files[0];
-  let fileData = (new FormData()).append("file", file);
+  let data = new FormData();
+  data.append('file', file);
   
-  fetch("http://localhost:3000/api/upload", {
+  createTask();
+  let response = await fetch("http://localhost:3000/api/upload", {
     method: "POST",
-    body: fileData
-  }).then(response => {
-    progress.innerHTML = response.msg;
+    body: data
+  });
+  response = await response.json();
+  progress.innerHTML = response.msg;
+  removeTask();
+}
+
+function createTask(){
+  let handler = document.createElement('button');
+  handler.id = "status";
+  handler.onclick = "pause(this)";
+  handler.innerHTML = "Pause";
+  document.getElementById('tasks').append(handler);
+}
+
+function removeTask(){
+  document.getElementById('status').remove();
+}
+
+async function pause(task){
+  let response = await fetch("http://localhost:3000/api/handle", {
+    method: "POST",
   });
 }
