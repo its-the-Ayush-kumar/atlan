@@ -35,13 +35,19 @@ router.post('/upload', async (req, res, next) => {
     });
 
     req.on('end', () => {
-      fs.close(fd, (err) => console.log("Error closing file!"));
+      fs.close(fd, (err) => {
+        if(err) console.log("error closing file!");
+        else console.log("File closed successfully");
+      });
       console.log("Data written successfully!");
       res.status(200).json({msg: "Uploaded!"});
     });
 
     req.on('error', err => {
-      fs.close(fd, (err) => console.log("Error closing file!"));
+      fs.close(fd, (err) => {
+        if(err) console.log("error closing file!");
+        else console.log("File closed successfully");
+      });
       console.log("There was some error!");
       res.status(300).json({msg: "Error!"});
     });
