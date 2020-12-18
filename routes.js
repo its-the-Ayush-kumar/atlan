@@ -2,6 +2,7 @@ const express = require('express');
 const csv = require('csv-parser');
 const router = express.Router();
 const fs = require('fs');
+const path = require('path');
 
 router.post('/upload', async (req, res, next) => {
   const path = "./upload/" + Date.now() + ".csv";
@@ -25,7 +26,7 @@ router.post('/upload', async (req, res, next) => {
         if(err) throw err;
         else{
           num++;
-          if(num % 10000 === 0) console.log(num + " rows uploaded!");
+          console.log(num + " rows uploaded!");
         }
       });
     });
@@ -50,7 +51,7 @@ router.post('/upload', async (req, res, next) => {
   });
 });
 
-router.post('/handle', (req, res, next) => {
+router.get('/handle', (req, res, next) => {
   console.log(process.pid + " is handling this control request");
   if(process.env.status === "1"){
     process.env.status = "0";
@@ -60,6 +61,26 @@ router.post('/handle', (req, res, next) => {
     process.env.status = "1";
     console.log("resumed................................");
     res.status(200).send("resumed");
+  }
+});
+
+router.get('/clear', (req, res, next) => {
+  console.log(process.pid + " is handling this clear request");
+  try{
+    fs.readdir('upload', (err, files) => {
+      if(err) throw err;
+      for(const file of files){
+        fs.unlink(path.join('upload', file), (err) => {
+          if(err) throw err;
+        });
+      }
+    });
+    console.log("upload folder cleared!");
+    res.status(200).send("files cleared!");
+  } catch(err){
+    console.log(err);
+    console.log("Could not clear the upload folder!");
+    res.status(312).send("there was some error");
   }
 });
 
