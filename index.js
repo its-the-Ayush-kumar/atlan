@@ -20,7 +20,7 @@ async function upload(e){
 function createTask(){
   let handler = document.createElement('button');
   handler.id = "status";
-  handler.onclick = "pause(this)";
+  handler.addEventListener('click', pause);
   handler.innerHTML = "Pause";
   document.getElementById('tasks').append(handler);
 }

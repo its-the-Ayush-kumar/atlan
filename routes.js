@@ -7,6 +7,7 @@ router.post('/upload', async (req, res, next) => {
   const path = "./upload/" + Date.now() + ".csv";
 
   process.env.status = "1";
+  console.log(process.pid + " is handling this upload request");
 
   fs.open(path, 'wx', (err, fd) => {
     if(err) throw err;
@@ -17,21 +18,16 @@ router.post('/upload', async (req, res, next) => {
       let crow = "";
       Object.values(row).forEach(val => crow += "\"" + val + "\",");
       crow += "\r\n";
-      if(process.env.status === "1"){
-        fs.appendFile(fd, crow, err => {
-          if(err) throw err;
-          else{
-            num++;
-            if(num % 10000 === 0) console.log(num + " rows uploaded!");
-          }
-        });
-      } else {
-        console.log("paused!");
-        setTimeout(() => {
-          process.env.status = "1";
-        }, 10000);
-        console.log("resumed!");
+      while(process.env.status === "0") {
+        setTimeout(() => console.log("waiting !!!"), 1000);
       }
+      fs.appendFile(fd, crow, err => {
+        if(err) throw err;
+        else{
+          num++;
+          if(num % 10000 === 0) console.log(num + " rows uploaded!");
+        }
+      });
     });
 
     req.on('end', () => {
@@ -55,9 +51,16 @@ router.post('/upload', async (req, res, next) => {
 });
 
 router.post('/handle', (req, res, next) => {
-  console.log("paused................................");
-  process.env.status = "0";
-  res.status(200).send("paused");
+  console.log(process.pid + " is handling this control request");
+  if(process.env.status === "1"){
+    process.env.status = "0";
+    console.log("paused................................");
+    res.status(200).send("paused");
+  } else {
+    process.env.status = "1";
+    console.log("resumed................................");
+    res.status(200).send("resumed");
+  }
 });
 
 module.exports = router;
